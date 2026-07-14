@@ -1,0 +1,461 @@
+
+package organizadorfinanceiro.view;
+ 
+import java.util.List;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+import organizadorfinanceiro.dao.UsuarioDAO;
+import organizadorfinanceiro.model.DespesasRecorrentes;
+ 
+public class TelaDespesasRecorrentes extends javax.swing.JFrame {
+    
+    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(TelaDespesasRecorrentes.class.getName());
+ 
+    // Atributos da tela.
+    private String nomeUsuario;
+    private DefaultTableModel modeloTabela;
+    private List<DespesasRecorrentes> listaDespesas;
+ 
+    public TelaDespesasRecorrentes(String nomeUsuario) {
+        this.nomeUsuario = nomeUsuario;
+        initComponents();
+        btnAtualizarCadastro.setText(nomeUsuario);
+        
+        modeloTabela = (DefaultTableModel) tblDespesas.getModel();
+ 
+        // Carrega do banco e sincroniza com a lista estática da TelaPrevisao.
+        UsuarioDAO dao = new UsuarioDAO();
+        listaDespesas = TelaPrevisao.getDespesasRecorrentes();
+        listaDespesas.clear();
+        listaDespesas.addAll(dao.buscarDespesasRecorrentes(nomeUsuario));
+                
+        btnCadastrar.addActionListener(e -> cadastrarDespesa());
+        btnExcluir.addActionListener(e -> excluirDespesa());
+        atualizarTabela();
+    }
+ 
+    public TelaDespesasRecorrentes() {
+        this("Usuário"); 
+    }
+    
+    private void cadastrarDespesa() {
+        String descricao = txtDespesa.getText().trim();
+        String valorAtualStr = txtValorMesAtual.getText().trim();
+        String valorAnteriorStr = txtValorMesAnterior.getText().trim();
+        String valorDoisMesesStr = txtValorDoisMesesAnteriores.getText().trim();    
+ 
+        if (descricao.isEmpty() || valorAtualStr.isEmpty() || valorAnteriorStr.isEmpty() || valorDoisMesesStr.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Preencha todos os campos.", "Erro", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+ 
+        try {
+            double valorAtual = Double.parseDouble(valorAtualStr.replace(",", "."));
+            double valorAnterior = Double.parseDouble(valorAnteriorStr.replace(",", "."));
+            double valorDoisMeses = Double.parseDouble(valorDoisMesesStr.replace(",", "."));
+ 
+            DespesasRecorrentes despesa = new DespesasRecorrentes(descricao, valorAtual, valorAnterior, valorDoisMeses);
+ 
+            // Persiste no banco.
+            UsuarioDAO dao = new UsuarioDAO();
+            boolean sucesso = dao.inserirDespesaRecorrente(nomeUsuario, despesa);
+ 
+            if (!sucesso) {
+                JOptionPane.showMessageDialog(this, "Erro ao salvar no banco.", "Erro", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+ 
+            listaDespesas.add(despesa);
+            atualizarTabela();
+ 
+            txtOutItemCadastrado.setText("Despesa '" + descricao + "' cadastrada!");
+            txtDespesa.setText("");
+            txtValorMesAtual.setText("");
+            txtValorMesAnterior.setText("");
+            txtValorDoisMesesAnteriores.setText("");
+            txtDespesa.requestFocus();
+ 
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Valores devem ser números válidos (use vírgula ou ponto).", "Erro de formato", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
+    private void excluirDespesa() {
+        int linhaSelecionada = tblDespesas.getSelectedRow();
+        if (linhaSelecionada == -1) {
+            JOptionPane.showMessageDialog(this, "Selecione uma despesa na tabela para excluir.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+ 
+        int confirm = JOptionPane.showConfirmDialog(this, "Deseja excluir a despesa selecionada?", "Confirmar exclusão", JOptionPane.YES_NO_OPTION);
+        if (confirm == JOptionPane.YES_OPTION) {
+            // Exclui do banco.
+            UsuarioDAO dao = new UsuarioDAO();
+            dao.excluirDespesaRecorrente(nomeUsuario, linhaSelecionada);
+ 
+            listaDespesas.remove(linhaSelecionada);
+            atualizarTabela();
+        }
+    }
+    
+    // Método para sincronizar a tabela com a lista de objetos.
+    private void atualizarTabela() {
+        modeloTabela.setRowCount(0); // limpa a tabela
+        
+        for (DespesasRecorrentes d : listaDespesas) {
+            double media = d.calcularMedia();
+            modeloTabela.addRow(new Object[]{
+                d.getDescricao(),
+                String.format("%,.2f", d.getValorAtual()),
+                String.format("%,.2f", d.getValorAnterior()),
+                String.format("%,.2f", d.getValorDoisMeses()),
+                String.format("%,.2f", media)
+            });
+        }
+    }
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        jPanel1 = new javax.swing.JPanel();
+        jPanel2 = new javax.swing.JPanel();
+        btnSair = new javax.swing.JButton();
+        btnPrevisao = new javax.swing.JButton();
+        btnDespesasRecorrentes = new javax.swing.JButton();
+        btnDespesasNaoRecorrentes = new javax.swing.JButton();
+        btnPoupanca = new javax.swing.JButton();
+        btnAtualizarCadastro = new javax.swing.JButton();
+        txtDespesa = new javax.swing.JTextField();
+        jLabel2 = new javax.swing.JLabel();
+        btnCadastrar = new javax.swing.JButton();
+        txtValorMesAtual = new javax.swing.JTextField();
+        jLabel3 = new javax.swing.JLabel();
+        txtValorMesAnterior = new javax.swing.JTextField();
+        jLabel4 = new javax.swing.JLabel();
+        txtValorDoisMesesAnteriores = new javax.swing.JTextField();
+        jLabel5 = new javax.swing.JLabel();
+        txtOutItemCadastrado = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
+        jSeparator1 = new javax.swing.JSeparator();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        tblDespesas = new javax.swing.JTable();
+        jLabel8 = new javax.swing.JLabel();
+        btnExcluir = new javax.swing.JButton();
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        jPanel1.setBackground(new java.awt.Color(0, 0, 51));
+
+        jPanel2.setBackground(new java.awt.Color(147, 103, 48));
+
+        btnSair.setBackground(new java.awt.Color(255, 204, 0));
+        btnSair.setFont(new java.awt.Font("Consolas", 1, 12)); // NOI18N
+        btnSair.setText("Sair");
+        btnSair.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnSair.addActionListener(this::btnSairActionPerformed);
+
+        btnPrevisao.setBackground(new java.awt.Color(255, 204, 0));
+        btnPrevisao.setFont(new java.awt.Font("Consolas", 1, 12)); // NOI18N
+        btnPrevisao.setText("Previsão");
+        btnPrevisao.addActionListener(this::btnPrevisaoActionPerformed);
+
+        btnDespesasRecorrentes.setBackground(new java.awt.Color(255, 204, 0));
+        btnDespesasRecorrentes.setFont(new java.awt.Font("Consolas", 1, 12)); // NOI18N
+        btnDespesasRecorrentes.setText("Despesas Recorrentes");
+        btnDespesasRecorrentes.addActionListener(this::btnDespesasRecorrentesActionPerformed);
+
+        btnDespesasNaoRecorrentes.setBackground(new java.awt.Color(255, 204, 0));
+        btnDespesasNaoRecorrentes.setFont(new java.awt.Font("Consolas", 1, 12)); // NOI18N
+        btnDespesasNaoRecorrentes.setText("Despesas não Recorrentes");
+        btnDespesasNaoRecorrentes.addActionListener(this::btnDespesasNaoRecorrentesActionPerformed);
+
+        btnPoupanca.setBackground(new java.awt.Color(255, 204, 0));
+        btnPoupanca.setFont(new java.awt.Font("Consolas", 1, 12)); // NOI18N
+        btnPoupanca.setText("Poupança");
+        btnPoupanca.addActionListener(this::btnPoupancaActionPerformed);
+
+        btnAtualizarCadastro.setBackground(new java.awt.Color(255, 153, 0));
+        btnAtualizarCadastro.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        btnAtualizarCadastro.setForeground(new java.awt.Color(255, 255, 255));
+        btnAtualizarCadastro.setText("Usuário");
+        btnAtualizarCadastro.setBorder(null);
+        btnAtualizarCadastro.setBorderPainted(false);
+        btnAtualizarCadastro.setContentAreaFilled(false);
+        btnAtualizarCadastro.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnAtualizarCadastro.setFocusPainted(false);
+        btnAtualizarCadastro.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnAtualizarCadastro.addActionListener(this::btnAtualizarCadastroActionPerformed);
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGap(16, 16, 16)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnSair, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnDespesasRecorrentes, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnPrevisao, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnDespesasNaoRecorrentes, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnPoupanca, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(18, 18, 18))
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGap(93, 93, 93)
+                .addComponent(btnAtualizarCadastro)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGap(45, 45, 45)
+                .addComponent(btnAtualizarCadastro)
+                .addGap(68, 68, 68)
+                .addComponent(btnPrevisao, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(29, 29, 29)
+                .addComponent(btnDespesasRecorrentes, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(31, 31, 31)
+                .addComponent(btnDespesasNaoRecorrentes, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(32, 32, 32)
+                .addComponent(btnPoupanca, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 227, Short.MAX_VALUE)
+                .addComponent(btnSair, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(48, 48, 48))
+        );
+
+        jLabel2.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        jLabel2.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel2.setText("Descrição da despesa a cadastrar");
+
+        btnCadastrar.setBackground(new java.awt.Color(255, 204, 0));
+        btnCadastrar.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
+        btnCadastrar.setText("Cadastrar");
+
+        jLabel3.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        jLabel3.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel3.setText("Valor mês atual");
+
+        jLabel4.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        jLabel4.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel4.setText("Valor mês anterior");
+
+        jLabel5.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        jLabel5.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel5.setText("Valor 2 meses anteriores");
+
+        txtOutItemCadastrado.setFont(new java.awt.Font("Segoe UI", 2, 14)); // NOI18N
+        txtOutItemCadastrado.setForeground(new java.awt.Color(255, 204, 0));
+
+        jLabel7.setFont(new java.awt.Font("Segoe UI", 0, 24)); // NOI18N
+        jLabel7.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel7.setText("Despesas Recorrentes (permanentes)");
+
+        tblDespesas.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Item", "Valor M0", "Valor M-1", "Valor M-2", "Valor Médio"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+        });
+        tblDespesas.setSelectionBackground(new java.awt.Color(145, 101, 47));
+        jScrollPane2.setViewportView(tblDespesas);
+        if (tblDespesas.getColumnModel().getColumnCount() > 0) {
+            tblDespesas.getColumnModel().getColumn(0).setMinWidth(400);
+        }
+
+        jLabel8.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        jLabel8.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel8.setText("Selecione a despesa a excluir");
+
+        btnExcluir.setBackground(new java.awt.Color(147, 103, 48));
+        btnExcluir.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
+        btnExcluir.setForeground(new java.awt.Color(255, 255, 255));
+        btnExcluir.setText("Excluir");
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(78, 78, 78)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jLabel8)
+                    .addComponent(btnExcluir, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 164, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jScrollPane2)
+                    .addComponent(jLabel7)
+                    .addComponent(jSeparator1)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(txtOutItemCadastrado, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel3)
+                                    .addComponent(txtValorMesAtual, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(70, 70, 70)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel4)
+                                    .addComponent(txtValorMesAnterior, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(60, 60, 60)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel5)
+                                    .addComponent(txtValorDoisMesesAnteriores, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(txtDespesa, javax.swing.GroupLayout.Alignment.LEADING))
+                        .addGap(72, 72, 72)
+                        .addComponent(btnCadastrar, javax.swing.GroupLayout.PREFERRED_SIZE, 164, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(0, 89, Short.MAX_VALUE))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(37, 37, 37)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jLabel7)
+                        .addGap(39, 39, 39)
+                        .addComponent(jLabel2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(txtDespesa, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(jLabel3)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(txtValorMesAtual))
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(jLabel4)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(txtValorMesAnterior, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(145, 145, 145)
+                        .addComponent(jLabel5)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(txtValorDoisMesesAnteriores, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(btnCadastrar, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(txtOutItemCadastrado, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel8)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 254, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(btnExcluir, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(37, 37, 37))
+        );
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+
+        pack();
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void btnAtualizarCadastroActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAtualizarCadastroActionPerformed
+        TelaAtualizarCadastro atualizarCadastro = new TelaAtualizarCadastro(nomeUsuario);
+        atualizarCadastro.setVisible(true);
+        dispose();
+    }//GEN-LAST:event_btnAtualizarCadastroActionPerformed
+
+    private void btnSairActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSairActionPerformed
+        System.exit(0);
+    }//GEN-LAST:event_btnSairActionPerformed
+
+    private void btnDespesasNaoRecorrentesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDespesasNaoRecorrentesActionPerformed
+        TelaDespesasNaoRecorrentes despesasNaoRecorrentes = new TelaDespesasNaoRecorrentes(nomeUsuario);
+        despesasNaoRecorrentes.setVisible(true);
+        dispose();
+    }//GEN-LAST:event_btnDespesasNaoRecorrentesActionPerformed
+
+    private void btnPoupancaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPoupancaActionPerformed
+        TelaPoupanca poupanca = new TelaPoupanca(nomeUsuario);
+        poupanca.setVisible(true);
+        dispose();
+    }//GEN-LAST:event_btnPoupancaActionPerformed
+
+    private void btnPrevisaoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPrevisaoActionPerformed
+        TelaPrevisao previsao = new TelaPrevisao(nomeUsuario);
+        previsao.setVisible(true);
+        dispose();
+    }//GEN-LAST:event_btnPrevisaoActionPerformed
+
+    private void btnDespesasRecorrentesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDespesasRecorrentesActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnDespesasRecorrentesActionPerformed
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) {
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ReflectiveOperationException | javax.swing.UnsupportedLookAndFeelException ex) {
+            logger.log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(() -> new TelaDespesasRecorrentes().setVisible(true));
+    }
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnAtualizarCadastro;
+    private javax.swing.JButton btnCadastrar;
+    private javax.swing.JButton btnDespesasNaoRecorrentes;
+    private javax.swing.JButton btnDespesasRecorrentes;
+    private javax.swing.JButton btnExcluir;
+    private javax.swing.JButton btnPoupanca;
+    private javax.swing.JButton btnPrevisao;
+    private javax.swing.JButton btnSair;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JTable tblDespesas;
+    private javax.swing.JTextField txtDespesa;
+    private javax.swing.JLabel txtOutItemCadastrado;
+    private javax.swing.JTextField txtValorDoisMesesAnteriores;
+    private javax.swing.JTextField txtValorMesAnterior;
+    private javax.swing.JTextField txtValorMesAtual;
+    // End of variables declaration//GEN-END:variables
+}
